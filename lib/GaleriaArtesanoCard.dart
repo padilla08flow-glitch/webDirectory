@@ -39,7 +39,7 @@ class GaleriaArtesanoCard extends StatelessWidget{
                 Container(
                   height: 200,
                   width: double.infinity,
-                  color: AppColors.softPink.withAlpha(67), // Usando AppColors
+                  color: AppColors.softPink.withAlpha(67),
                   child: const Center(
                   child: Icon(
                     Icons.storefront_outlined, 
@@ -89,7 +89,6 @@ class GaleriaArtesanoCard extends StatelessWidget{
                       fontWeight: FontWeight.w600,
                       color: AppColors.darkAccent,
                     ),
-                    
                   ),
                   Text(
                     'Prenda: $prendaPrincipal',
