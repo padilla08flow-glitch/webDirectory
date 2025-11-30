@@ -55,7 +55,6 @@ class PerfilArtesano extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                //cabecera 
                 Text(
                   artesano.nombre,
                   style: const TextStyle(
