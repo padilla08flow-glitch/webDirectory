@@ -30,25 +30,26 @@ class Artesano {
   factory Artesano.fromFirestore(Map<String, dynamic> data, String id) {
     
     List<String> _toList(dynamic rawData) {
-      if (rawData is String) {
-        return [rawData];
-      }
       if (rawData is List) {
         return List<String>.from(rawData);
+      }
+      if (rawData is String && rawData.isNotEmpty) {
+        return [rawData];
       }
       return ['Sin definir'];
     }
 
     return Artesano(
       uid: id,
-      nombre: data['nombre'] ?? 'Artesano Desconocido',
-      region: data['region'] ?? 'Oaxaca',
+      nombre: data['nombreArtesano'] ?? 'Artesano Desconocido',
+      region: data['regionOrigen'] ?? 'Oaxaca',
       descripcion: data['descripcion'] ?? 'Sin descripción.',
       email: data['email'] ?? '',
       telefono: data['telefono'] ?? 'Sin contacto',
-      tecnicas: _toList(data['tecnica']), 
-      prendas: _toList(data['prenda']), 
+      tecnicas: _toList(data['tecnicas']),
+      prendas: _toList(data['prendas']),
       publicado: data['publicado'] ?? false,
+      logoUrl: data['logo_url'],
     );
   }
 }
