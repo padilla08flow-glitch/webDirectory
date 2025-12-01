@@ -13,6 +13,7 @@ class Artesano {
   final bool publicado;
   
   final String? logoUrl; 
+  final Map<String, dynamic> redesSociales;
 
   const Artesano({
     required this.uid,
@@ -23,6 +24,7 @@ class Artesano {
     required this.telefono,
     required this.prendas,
     required this.tecnicas,
+    required this.redesSociales,
     this.publicado = false,
     this.logoUrl,
   });
@@ -50,6 +52,9 @@ class Artesano {
       prendas: _toList(data['prendas']),
       publicado: data['publicado'] ?? false,
       logoUrl: data['logo_url'],
+      redesSociales: data['redesSociales'] is Map 
+          ? Map<String, dynamic>.from(data['redesSociales'])
+          : {},
     );
   }
 }
