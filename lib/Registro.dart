@@ -57,7 +57,7 @@ class _RegistroState extends State<Registro> {
     });
 
     try {
-      //crear el cochino usuario --> al fin 
+      //crear el usuario --> al fin 
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -94,6 +94,10 @@ class _RegistroState extends State<Registro> {
       }
     } on FirebaseAuthException catch (e) {
       _showErrorDialog(e.code);
+    }catch(e){
+      _showErrorDialog('Error inesperado: $e'); 
+      print('Error de Registro (Firestore/Conexión): $e');
+      
     } finally {
       if (mounted) {
         setState(() {
