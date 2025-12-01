@@ -183,7 +183,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
               ),
               const SizedBox(height: 30),
 
-              // Email
+              // CORREO
               CampoTextoLogin(
                 controller: _emailController,
                 hintText: 'Correo electrónico',
@@ -192,7 +192,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
               ),
               const SizedBox(height: 15),
 
-              // Contraseña
+              // CONTRASEÑA
               CampoTextoLogin(
                 controller: _passwordController,
                 hintText: 'Contraseña',
@@ -201,7 +201,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
               ),
               const SizedBox(height: 10),
 
-              // Contraña olvidada
+              // CONTRASEÑA OLVIDADA
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
@@ -225,7 +225,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
               ),
               const SizedBox(height: 30),
 
-              // Login Button
+              // LOGIN
               ElevatedButton(
                 onPressed: _cargando ? null : singIn,
                 style: ElevatedButton.styleFrom(
