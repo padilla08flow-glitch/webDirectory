@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:web_directorio/Artesano.dart'; 
 import 'AppColors.dart'; 
+import 'package:url_launcher/url_launcher.dart';
 
 class PerfilArtesano extends StatelessWidget {
   final String artesanoUid;
@@ -12,6 +13,14 @@ class PerfilArtesano extends StatelessWidget {
     required this.artesanoUid,
   });
 
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+      } else{
+      throw 'No se pudo abrir la URL: $url';
+      }
+  }
   //obtener los datos de Artesano
   Future<Artesano> _fetchArtesano() async {
     final docSnapshot = await FirebaseFirestore.instance
@@ -37,6 +46,7 @@ class PerfilArtesano extends StatelessWidget {
       body: FutureBuilder<Artesano>(
         future: _fetchArtesano(),
         builder: (context, snapshot) {
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: AppColors.mexicanPink));
           }
@@ -94,7 +104,7 @@ class PerfilArtesano extends StatelessWidget {
                 _buildDetailSection(
                   title: 'Técnica(s) Principal(es)',
                   content: artesano.tecnicas.join(', '),
-                  icon: Icons.brush_outlined,
+                  icon: Icons.palette_outlined,
                 ),
                 _buildDetailSection(
                   title: 'Prenda(s) / Producto(s)',
@@ -109,10 +119,11 @@ class PerfilArtesano extends StatelessWidget {
                   'Contacto',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.mexicanPink),
                 ),
-                _buildContactRow(Icons.email_outlined, artesano.email),
-                _buildContactRow(Icons.phone_outlined, artesano.telefono),
-                
-                const SizedBox(height: 40),
+                _buildContactRow(Icons.email_outlined, artesano.email, 'mailto:${artesano.email}'),
+                 _buildContactRow(Icons.phone_outlined, artesano.telefono, 'tel:${artesano.telefono}'),
+                 const SizedBox(height: 20),
+                 _buildSocialMediaLinks(artesano),
+                 const SizedBox(height: 40),
               ],
             ),
           );
@@ -152,20 +163,67 @@ class PerfilArtesano extends StatelessWidget {
   }
 
   //contactos --> email / telefono
-  Widget _buildContactRow(IconData icon, String detail) {
+  Widget _buildContactRow(IconData icon, String detail, String urlScheme) {
     if (detail.isEmpty || detail == 'Sin contacto') return const SizedBox.shrink(); 
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.softPink),
-          const SizedBox(width: 8),
-          Text(
-            detail,
-            style: const TextStyle(fontSize: 16, color: AppColors.darkAccent),
-          ),
-        ],
+      child: InkWell(
+        onTap: () => _launchURL(urlScheme),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: AppColors.softPink),
+            const SizedBox(width: 8),
+            Text(
+              detail,
+              style: const TextStyle(fontSize: 16, color: AppColors.darkAccent),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+  Widget _buildSocialMediaLinks(Artesano artesano) {
+    final Map<String, dynamic> redes = artesano.redesSociales;
+    final List<Widget> socialIcons = [];
+    //facebook
+    final String facebook = redes['facebook'] ?? '';
+    if (facebook.isNotEmpty) {
+      socialIcons.add(
+        IconButton(
+          onPressed: () => _launchURL(facebook), 
+          icon: const Icon(Icons.facebook, size: 35, color: AppColors.mexicanPink),
+        ),
+      );
+    }
+
+    // Instagram
+    final String instagram = redes['instagram'] ?? '';
+    if (instagram.isNotEmpty) {
+      socialIcons.add(
+        IconButton(
+          onPressed: () => _launchURL(instagram), 
+          icon: const Icon(Icons.photo_camera_outlined, size: 30, color: AppColors.mexicanPink),
+        ),
+      );
+    }
+
+    if (socialIcons.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Redes Sociales',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.mexicanPink),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: socialIcons,
+        ),
+        const Divider(height: 30, color: AppColors.softPink),
+      ],
     );
   }
 }
