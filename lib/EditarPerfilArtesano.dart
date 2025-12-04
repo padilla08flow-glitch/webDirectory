@@ -34,7 +34,7 @@ class _EditarPerfilArtesanoState extends State<EditarPerfilArtesano> {
   @override
   void initState(){
     super.initState();
-    _loadArtesanoData();
+    _cargarDatosArtesano();
   }
   @override
   void dispose(){
@@ -49,7 +49,7 @@ class _EditarPerfilArtesanoState extends State<EditarPerfilArtesano> {
     super.dispose();
   }
 
-  Future<void> _loadArtesanoData() async{
+  Future<void> _cargarDatosArtesano() async{
     setState(() { _isLoading = true;});
     try{
       final docSnapshot = await FirebaseFirestore.instance
@@ -87,7 +87,7 @@ class _EditarPerfilArtesanoState extends State<EditarPerfilArtesano> {
     }
   }
 
-  Future<void> _saveChanges() async {
+  Future<void> _guardarCambios() async {
     if(!_formKey.currentState!.validate()){
       return;
     }
@@ -274,7 +274,8 @@ class _EditarPerfilArtesanoState extends State<EditarPerfilArtesano> {
                           _isPublished = newValue;
                         });
                       },
-                      activeColor: AppColors.mexicanPink,
+                      //activeColor: AppColors.mexicanPink,
+                      activeThumbColor: AppColors.mexicanPink,
                     ),
                   ],
                 ),
@@ -282,7 +283,7 @@ class _EditarPerfilArtesanoState extends State<EditarPerfilArtesano> {
                 _isLoading
                   ? const Center(child: CircularProgressIndicator(color: AppColors.mexicanPink))
                   : ElevatedButton (
-                    onPressed: _saveChanges, 
+                    onPressed: _guardarCambios, 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.mexicanPink,
                         minimumSize: const Size(double.infinity, 55),
