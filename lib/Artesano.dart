@@ -11,7 +11,7 @@ class Artesano {
   final List<String> prendas; 
   final List<String> tecnicas; 
   final bool publicado;
-  
+  final String ubicacionTaller;
   final String? logoUrl; 
   final Map<String, dynamic> redesSociales;
 
@@ -25,6 +25,7 @@ class Artesano {
     required this.prendas,
     required this.tecnicas,
     required this.redesSociales,
+    required this.ubicacionTaller,
     this.publicado = false,
     this.logoUrl,
   });
@@ -52,6 +53,7 @@ class Artesano {
       prendas: _toList(data['prendas']),
       publicado: data['publicado'] ?? false,
       logoUrl: data['logo_url'],
+      ubicacionTaller: data['ubicacionTaller'] ?? '',
       redesSociales: data['redesSociales'] is Map 
           ? Map<String, dynamic>.from(data['redesSociales'])
           : {},
