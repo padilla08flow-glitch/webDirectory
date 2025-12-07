@@ -21,6 +21,7 @@ class PerfilArtesano extends StatelessWidget {
       throw 'No se pudo abrir la URL: $url';
       }
   }
+
   //obtener los datos de Artesano
   Future<Artesano> _fetchArtesano() async {
     final docSnapshot = await FirebaseFirestore.instance
@@ -35,6 +36,32 @@ class PerfilArtesano extends StatelessWidget {
     }
   }
 
+  Widget _buildSectionCard({required String title, required Widget content}) {
+    return Card(
+      elevation: 3,
+      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.mexicanPink,
+              ),
+            ),
+            const SizedBox(height: 12),
+            content,
+          ],
+        ),
+      ),
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +101,7 @@ class PerfilArtesano extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
+
                 Row(
                   children: [
                     const Icon(Icons.location_on, size: 20, color: AppColors.softPink),
@@ -84,45 +112,47 @@ class PerfilArtesano extends StatelessWidget {
                     ),
                   ],
                 ),
-                
-                const Divider(height: 30, color: AppColors.softPink),
+                const SizedBox(height: 24),
 
-                //Descripccion
-                const Text(
-                  'Acerca de nosotros:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.mexicanPink),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  artesano.descripcion,
-                  style: const TextStyle(fontSize: 16, color: AppColors.darkAccent),
+                _buildSectionCard(
+                  title: 'Acerca de nosotros',
+                  content: Text(
+                    artesano.descripcion,
+                    style: const TextStyle(fontSize: 16, color: AppColors.darkAccent),
+                  ),
                 ),
 
-                const Divider(height: 30, color: AppColors.softPink),
-
-                //Detalles
-                _buildDetailSection(
-                  title: 'Técnica(s) Principal(es)',
-                  content: artesano.tecnicas.join(', '),
-                  icon: Icons.palette_outlined,
+                _buildSectionCard(
+                  title: 'Detalles del Arte',
+                  content: Column(
+                    children: [
+                      _buildDetailSection(
+                        title: 'Técnicas(s) Principales(es)',
+                        content: artesano.tecnicas.join(', '),
+                        icon: Icons.palette_outlined,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildDetailSection(
+                        title: 'Prenda(s) / Producto(s)', 
+                        content: artesano.prendas.join(', '), 
+                        icon: Icons.checkroom_outlined,
+                      ),
+                    ],
+                  ),
                 ),
-                _buildDetailSection(
-                  title: 'Prenda(s) / Producto(s)',
-                  content: artesano.prendas.join(', '),
-                  icon: Icons.checkroom_outlined,
-                ),
 
-                const Divider(height: 30, color: AppColors.softPink),
-
-                //Contacto
-                const Text(
-                  'Contacto',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.mexicanPink),
+                _buildSectionCard(
+                  title: 'Contacto',
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildContactRow(Icons.email_outlined, artesano.email, 'mailto:${artesano.email}'),
+                      _buildContactRow(Icons.phone_outlined, artesano.telefono, 'tel:${artesano.telefono}'),
+                      const SizedBox(height: 20),
+                      _buildSocialMediaLinks(artesano,)
+                    ],
+                  ),
                 ),
-                _buildContactRow(Icons.email_outlined, artesano.email, 'mailto:${artesano.email}'),
-                 _buildContactRow(Icons.phone_outlined, artesano.telefono, 'tel:${artesano.telefono}'),
-                 const SizedBox(height: 20),
-                 _buildSocialMediaLinks(artesano),
                  const SizedBox(height: 40),
               ],
             ),
@@ -131,38 +161,39 @@ class PerfilArtesano extends StatelessWidget {
       ),
     );
   }
-  
+
+
+  // ns
   //tecnica/Prenda
   Widget _buildDetailSection({required String title, required String content, required IconData icon}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 20, color: AppColors.softPink),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.darkAccent),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.only(left: 28.0),
-            child: Text(
-              content.isEmpty || content == 'N/A' ? 'Información no proporcionada' : content,
-              style: const TextStyle(fontSize: 16, color: AppColors.darkAccent),
+    // Eliminamos el Padding vertical que estaba antes de la refactorización para que el espaciado lo maneje el Column padre.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 20, color: AppColors.softPink),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.darkAccent),
             ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Padding(
+          padding: const EdgeInsets.only(left: 28.0),
+          child: Text(
+            // Manejamos el caso de que el array esté vacío y haya sido serializado a una cadena vacía o "Sin definir"
+            content.isEmpty || content.contains('Sin definir') ? 'Información no proporcionada' : content,
+            style: const TextStyle(fontSize: 16, color: AppColors.darkAccent),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  //contactos --> email / telefono
+  //contactos  / telefono
   Widget _buildContactRow(IconData icon, String detail, String urlScheme) {
     if (detail.isEmpty || detail == 'Sin contacto') return const SizedBox.shrink(); 
     
@@ -183,9 +214,11 @@ class PerfilArtesano extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildSocialMediaLinks(Artesano artesano) {
     final Map<String, dynamic> redes = artesano.redesSociales;
     final List<Widget> socialIcons = [];
+    
     //facebook
     final String facebook = redes['facebook'] ?? '';
     if (facebook.isNotEmpty) {
@@ -222,7 +255,6 @@ class PerfilArtesano extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: socialIcons,
         ),
-        const Divider(height: 30, color: AppColors.softPink),
       ],
     );
   }
