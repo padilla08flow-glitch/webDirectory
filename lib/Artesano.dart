@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 //import 'package:cloud_firestore/cloud_firestore.dart';
-
+//ns
 class Artesano {
   final String uid;
   final String nombre;

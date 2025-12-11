@@ -38,7 +38,6 @@ class _PagHomeState extends State<PagHome> {
     _controlarBusqueda.dispose();
     super.dispose();
   }
-
   //metodo para filtrar busquedas desde barra de busqueda
   void _alCambiarBusqueda() {
     if (mounted) {
