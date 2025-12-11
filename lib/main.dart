@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:web_directorio/WelcomeSreen.dart';
+import 'package:web_directorio/IniciarSesion.dart';
 import 'package:web_directorio/firebase_options.dart';
 
 void main() async {
@@ -13,8 +13,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,7 +21,7 @@ class MyApp extends StatelessWidget {
       title: 'Login App',
       initialRoute: '/login',
       routes: {
-        '/login': (context) => WelcomeScreen(), 
+        '/login': (context) => IniciarSesion(), 
       },
     );
   }

@@ -1,48 +1,53 @@
+// ignore_for_file: type=lint
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'HomePage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:web_directorio/PagHome.dart';
+import 'AppColors.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+class Registro extends StatefulWidget {
+  const Registro({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  State<Registro> createState() => _RegistroState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _RegistroState extends State<Registro> {
+  final TextEditingController _nombreArtesanoController = TextEditingController(); 
+  final TextEditingController _tecnicaController = TextEditingController(); 
+  final TextEditingController _regionController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   
   bool _isLoading = false;
 
-  // Paleta de Colores (consistente con el resto del app)
-  static const Color mexicanPink = Color(0xffCD2C58);
-  static const Color softPink = Color(0xffE06B80);
-  static const Color lightBackground = Color(0xffFEF2F2);
-  static const Color darkAccent = Color.fromARGB(255, 74, 39, 56);
-
   @override
   void dispose() {
+    _nombreArtesanoController.dispose();
+    _tecnicaController.dispose();
+    _regionController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  // Lógica de Registro con Firebase
-  Future<void> signUp() async {
-    // 1. Validación de campos no vacíos
-    if (_emailController.text.trim().isEmpty || 
-        _passwordController.text.trim().isEmpty ||
-        _confirmPasswordController.text.trim().isEmpty) {
+  //toda la logica del Registro 
+  Future<void> signUpRegistro() async {
+    final String nombreArtesano = _nombreArtesanoController.text.trim();
+    final String tecnica = _tecnicaController.text.trim(); 
+    final String region = _regionController.text.trim();
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text.trim();
+
+    if (nombreArtesano.isEmpty || tecnica.isEmpty || region.isEmpty || email.isEmpty || password.isEmpty || _confirmPasswordController.text.trim().isEmpty) {
       _showErrorDialog('empty-fields');
       return;
     }
 
-    // 2. Validación de Contraseñas
-    if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
+    if (password != _confirmPasswordController.text.trim()) {
       _showErrorDialog('passwords-do-not-match');
       return;
     }
@@ -52,22 +57,47 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     try {
-      // 3. Crear Usuario en Firebase
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      //crear el usuario --> al fin 
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      // Registro exitoso, navegar a la página principal
+      //guardar datos --> algo
+      await FirebaseFirestore.instance
+        .collection('artesanos')
+        .doc(userCredential.user!.uid)
+        .set({
+          
+          'nombreArtesano': nombreArtesano,
+          'email': email,
+          'tecnicas': [tecnica], 
+          'regionOrigen': region,
+          
+          'prendas': ['Sin definir'], 
+          'descripcion': '¡Artesano recién registrado! Completa tu perfil para más detalles.',
+          'telefono': 'Sin contacto',
+          'redesSociales': {},
+          
+          'uid': userCredential.user!.uid,
+          'fechaRegistro': FieldValue.serverTimestamp(),
+          'publicado': true, //se mustra automaticamente en el Directorio 
+        });
+
+      //si no hay errores
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const HomePage(),
+            builder: (context) => const PagHome(),
           ),
         );
       }
     } on FirebaseAuthException catch (e) {
       _showErrorDialog(e.code);
+    }catch(e){
+      _showErrorDialog('Error inesperado: $e'); 
+      print('Error de Registro (Firestore/Conexión): $e');
+      
     } finally {
       if (mounted) {
         setState(() {
@@ -77,7 +107,6 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  // Manejo de errores visuales (Snack Bar)
   void _showErrorDialog(String code) {
     String message;
 
@@ -104,14 +133,13 @@ class _SignupPageState extends State<SignupPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: mexicanPink,
+        backgroundColor: AppColors.mexicanPink,
         duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  // Widget para construir los campos de texto
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -123,18 +151,20 @@ class _SignupPageState extends State<SignupPage> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      style: const TextStyle(color: darkAccent),
+      style: const TextStyle(color: AppColors.darkAccent), 
       decoration: InputDecoration(
         hintText: hintText,
-        prefixIcon: Icon(icon, color: softPink),
+        prefixIcon: Icon(icon, color: AppColors.softPink), 
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: softPink.withOpacity(0.5), width: 1),
+          borderSide: BorderSide(color: AppColors.softPink.withAlpha(112), width: 1),
         ),
+
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: mexicanPink, width: 2),
+          borderSide: const BorderSide(color: AppColors.mexicanPink, width: 2),
         ),
+
         fillColor: Colors.white,
         filled: true,
         contentPadding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 15.0),
@@ -148,14 +178,13 @@ class _SignupPageState extends State<SignupPage> {
     
     return Scaffold(
       body: Container(
-        // INICIO DE LA MODIFICACIÓN: Usamos BoxDecoration para cargar la imagen
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/fondoLogin1.jpg'), // Asegúrate de que esta ruta sea correcta
-            fit: BoxFit.cover, // Para cubrir toda la pantalla
+            image: AssetImage('assets/fondoLogin1.jpg'), 
+            fit: BoxFit.cover,
           ),
         ),
-        // FIN DE LA MODIFICACIÓN
+
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -165,46 +194,72 @@ class _SignupPageState extends State<SignupPage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
                   decoration: BoxDecoration(
-                    // Puedes hacer el fondo del formulario semi-transparente o sólido
-                    color: lightBackground.withOpacity(0.95), 
+                    
+                    color: AppColors.lightBackground.withAlpha(225),
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3), // Sombra más visible sobre fondo de imagen
+                        color: Colors.black38, 
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
                     ],
                   ),
+
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Título
+
                       const Icon(
                         Icons.add_business_outlined,
                         size: 80,
-                        color: mexicanPink,
+                        color: AppColors.mexicanPink, 
                       ),
                       const SizedBox(height: 10),
                       Text(
                         '¡Únete al Directorio!',
                         style: GoogleFonts.bebasNeue(
                           fontSize: 32,
-                          color: darkAccent,
+                          color: AppColors.darkAccent, 
                         ),
                       ),
+
                       const SizedBox(height: 5),
                       const Text(
-                        'Crea tu cuenta de artesano en tres pasos.',
+                        'Crea tu perfil de Artesano',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14,
-                          color: darkAccent,
+                          color: AppColors.darkAccent, 
                         ),
                       ),
                       const SizedBox(height: 30),
 
-                      // Email TextField
+                      // Nombre de Artesano
+                      _buildTextField(
+                        controller: _nombreArtesanoController,
+                        hintText: 'Nombre de Artesano o Taller',
+                        icon: Icons.person_outline,
+                      ),
+                      const SizedBox(height: 15),
+                      
+                      // Tecnica Principal
+                      _buildTextField(
+                        controller: _tecnicaController,
+                        hintText: 'Técnica Principal (ej. Telar de cintura)',
+                        icon: Icons.palette_outlined,
+                      ),
+                      const SizedBox(height: 15),
+                      
+                      // Region 
+                      _buildTextField(
+                        controller: _regionController,
+                        hintText: 'Región (ej. Teotitlán)',
+                        icon: Icons.location_city_outlined,
+                      ),
+                      const SizedBox(height: 15),
+
+                      // Email 
                       _buildTextField(
                         controller: _emailController,
                         hintText: 'Correo Electrónico',
@@ -213,7 +268,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       const SizedBox(height: 15),
 
-                      // Password TextField
+                      // Password 
                       _buildTextField(
                         controller: _passwordController,
                         hintText: 'Contraseña',
@@ -222,7 +277,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       const SizedBox(height: 15),
 
-                      // Confirm Password TextField
+                      // Confirmar Password
                       _buildTextField(
                         controller: _confirmPasswordController,
                         hintText: 'Confirmar Contraseña',
@@ -231,11 +286,11 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       const SizedBox(height: 30),
 
-                      // Botón de Registro
+                      // Boton de Registro
                       ElevatedButton(
-                        onPressed: _isLoading ? null : signUp,
+                        onPressed: _isLoading ? null : signUpRegistro,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: mexicanPink,
+                          backgroundColor: AppColors.mexicanPink,
                           minimumSize: const Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -271,20 +326,19 @@ class _SignupPageState extends State<SignupPage> {
                             '¿Ya tienes una cuenta? ',
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              color: darkAccent,
+                              color: AppColors.darkAccent,
                               fontSize: 14,
                             ),
                           ),
                           GestureDetector(
                             onTap: () {
-                              // Vuelve a la página anterior (Login o WelcomeScreen)
                               Navigator.pop(context);
                             },
                             child: const Text(
                               'Iniciar Sesión',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: mexicanPink,
+                                color: AppColors.mexicanPink,
                                 decoration: TextDecoration.underline,
                               ),
                             ),
